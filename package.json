@@ -21,5 +21,8 @@
   "bugs": {
     "url": "https://github.com/dpoindexter/bundling-globals-module-transpiler/issues"
   },
-  "homepage": "https://github.com/dpoindexter/bundling-globals-module-transpiler"
+  "homepage": "https://github.com/dpoindexter/bundling-globals-module-transpiler",
+  "dependencies": {
+    "recast": "^0.9.8"
+  }
 }

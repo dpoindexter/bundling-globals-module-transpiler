@@ -1,3 +1,9 @@
+var recast = require('recast'),
+    types = recast.types,
+    n = types.namedTypes,
+    b = types.builders,
+    Replacement = require('./lib/replacement'),
+    util = require('./lib/util');
 
 /**
  * Inlines relative includes, references absolute includes as global
@@ -8,6 +14,28 @@
  */
  function BundledGlobalsFormatter() {}
 
+ /**
+  * This hook is called by the container before it converts its modules. We use
+  * it to ensure all of the imports are included because we need to know about
+  * them at compile time.
+  *
+  * @param {Container} container
+ //  */
+ BundledGlobalsFormatter.prototype.beforeConvert = function(container) {
+    container.findImportedModules();
+
+    // Cache all the import and export specifier names.
+    container.getModules().forEach(function(mod) {
+        [mod.imports, mod.exports].forEach(function(bindingList) {
+            bindingList.declarations.forEach(function (declaration) {
+                declaration.specifiers.forEach(function (specifier) {
+                    specifier.name;
+                });
+            });
+        });
+    });
+ };
+
 /**
  * Convert a list of ordered modules into a list of files.
  *
@@ -15,7 +43,29 @@
  * @return {File[]}
  */
 BundledGlobalsFormatter.prototype.build = function(modules) {
-    throw new Error('#build must be implemented in subclasses');
+
+    var moduleBodyList = modules.reduce(function(statements, module) {
+        var nonNull = module.ast.program.body.filter(function (node) { return !!node; });
+        return statements.concat(nonNull);
+    }, []);
+
+    moduleBodyList.unshift(
+        b.expressionStatement(b.literal('use strict'))
+    );
+
+    var moduleParamList = [b.identifier('foo'), b.identifier('bar')];
+
+    var moduleArgumentList = [b.thisExpression(), b.identifier('foo'), b.identifier('bar')];
+
+    return [b.file(
+        b.program([
+            b.expressionStatement(util.IIFE(
+                moduleParamList,
+                moduleBodyList,
+                moduleArgumentList
+            ))
+        ])
+    )];
 };
 
 /**
@@ -38,7 +88,7 @@ BundledGlobalsFormatter.prototype.build = function(modules) {
  * @return {Statement}
  */
 BundledGlobalsFormatter.prototype.defaultExport = function(mod, declaration) {
-    throw new Error('#defaultExport must be implemented in subclasses');
+    return null;
 };
 
 /**
@@ -59,7 +109,7 @@ BundledGlobalsFormatter.prototype.defaultExport = function(mod, declaration) {
  * @return {?Expression}
  */
 BundledGlobalsFormatter.prototype.exportedReference = function(mod, referencePath) {
-    throw new Error('#exportedReference must be implemented in subclasses');
+    return null;
 };
 
 /**
@@ -80,7 +130,7 @@ BundledGlobalsFormatter.prototype.exportedReference = function(mod, referencePat
  * @return {?Expression}
  */
 BundledGlobalsFormatter.prototype.importedReference = function(mod, referencePath) {
-    throw new Error('#importedReference must be implemented in subclasses');
+    return null;
 };
 
 /**
@@ -108,7 +158,7 @@ BundledGlobalsFormatter.prototype.localReference = function(mod, referencePath) 
  * @return {?Node[]}
  */
 BundledGlobalsFormatter.prototype.processFunctionDeclaration = function(mod, nodePath) {
-    throw new Error('#processFunctionDeclaration must be implemented in subclasses');
+    return null;
 };
 
 /**
@@ -119,7 +169,7 @@ BundledGlobalsFormatter.prototype.processFunctionDeclaration = function(mod, nod
  * @return {?Node[]}
  */
 BundledGlobalsFormatter.prototype.processClassDeclaration = function(mod, nodePath) {
-    throw new Error('#processClassDeclaration must be implemented in subclasses');
+    return null;
 };
 
 /**
@@ -130,7 +180,7 @@ BundledGlobalsFormatter.prototype.processClassDeclaration = function(mod, nodePa
  * @return {?Node[]}
  */
 BundledGlobalsFormatter.prototype.processVariableDeclaration = function(mod, nodePath) {
-    throw new Error('#processVariableDeclaration must be implemented in subclasses');
+    return null;
 };
 
 /**
@@ -149,7 +199,7 @@ BundledGlobalsFormatter.prototype.processVariableDeclaration = function(mod, nod
  * @return {?Replacement}
  */
 BundledGlobalsFormatter.prototype.processExportDeclaration = function(mod, nodePath) {
-    throw new Error('#processExportDeclaration must be implemented in subclasses');
+    return null;
 };
 
 /**
@@ -167,7 +217,7 @@ BundledGlobalsFormatter.prototype.processExportDeclaration = function(mod, nodeP
  * @return {?Replacement}
  */
 BundledGlobalsFormatter.prototype.processExportReassignment = function(mod, nodePath) {
-    throw new Error('#processExportReassignment must be implemented in subclasses');
+    return null;
 };
 
 /**
@@ -180,7 +230,15 @@ BundledGlobalsFormatter.prototype.processExportReassignment = function(mod, node
  * @return {?Replacement}
  */
 BundledGlobalsFormatter.prototype.processImportDeclaration = function(mod, nodePath) {
-    throw new Error('#processImportDeclaration must be implemented in subclasses');
+    return null;
 };
 
-module.exports = Formatter;
+BundledGlobalsFormatter.prototype.reference = function() {
+    return b.memberExpression(
+        b.identifier(mod.id),
+        n.Identifier.check(identifier) ? identifier : b.identifier(identifier),
+        false
+    );
+};
+
+module.exports = BundledGlobalsFormatter;
