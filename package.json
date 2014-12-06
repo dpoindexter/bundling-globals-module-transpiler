@@ -1,0 +1,23 @@
+{
+  "name": "bundling-globals-module-transpiler",
+  "version": "0.0.0",
+  "description": "Resolvers and Formatter for ES6 Module Transpiler to produce bundled globals output",
+  "main": "index.js",
+  "dependencies": {
+    "es6-module-transpiler": "^0.9.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dpoindexter/bundling-globals-module-transpiler.git"
+  },
+  "author": "Daniel Poindexter",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dpoindexter/bundling-globals-module-transpiler/issues"
+  },
+  "homepage": "https://github.com/dpoindexter/bundling-globals-module-transpiler"
+}
