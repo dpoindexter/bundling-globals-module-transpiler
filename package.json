@@ -1,6 +1,6 @@
 {
   "name": "bundling-globals-module-transpiler",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Resolvers and Formatter for ES6 Module Transpiler to produce bundled globals output",
   "main": "index.js",
   "devDependencies": {
